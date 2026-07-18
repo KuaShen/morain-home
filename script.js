@@ -154,10 +154,12 @@ const LAB_PRODUCTS = [
 class AuroraCanvas {
   constructor() {
     this.canvas = document.getElementById('auroraCanvas');
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.canvas?.getContext('2d');
     this.particles = [];
     this.mouseX = 0;
     this.mouseY = 0;
+    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!this.canvas || !this.ctx || this.reducedMotion) return;
     this.resize();
     this.createParticles();
     this.bindEvents();
@@ -165,38 +167,47 @@ class AuroraCanvas {
   }
 
   resize() {
-    this.width = this.canvas.width = window.innerWidth;
-    this.height = this.canvas.height = window.innerHeight;
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.canvas.width = Math.floor(this.width * this.dpr);
+    this.canvas.height = Math.floor(this.height * this.dpr);
+    this.canvas.style.width = `${this.width}px`;
+    this.canvas.style.height = `${this.height}px`;
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
   }
 
   createParticles() {
-    const count = Math.min(80, Math.floor(this.width * this.height / 12000));
+    const count = Math.min(96, Math.floor(this.width * this.height / 10500));
     this.particles = Array.from({ length: count }, () => ({
       x: Math.random() * this.width,
       y: Math.random() * this.height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4 - 0.1,
-      size: Math.random() * 2.5 + 1,
-      alpha: Math.random() * 0.4 + 0.1,
-      hue: Math.random() * 60 + 260,
+      vx: (Math.random() - 0.5) * 0.28,
+      vy: (Math.random() - 0.5) * 0.28 - 0.08,
+      size: Math.random() * 1.8 + 0.7,
+      alpha: Math.random() * 0.36 + 0.08,
+      hue: [155, 184, 198, 326, 48][Math.floor(Math.random() * 5)],
       pulse: Math.random() * Math.PI * 2,
-      pulseSpeed: Math.random() * 0.02 + 0.005,
+      pulseSpeed: Math.random() * 0.025 + 0.006,
     }));
   }
 
   bindEvents() {
-    window.addEventListener('resize', () => this.resize());
+    window.addEventListener('resize', () => {
+      this.resize();
+      this.createParticles();
+    }, { passive: true });
     window.addEventListener('mousemove', (e) => {
       this.mouseX = (e.clientX / this.width - 0.5) * 2;
       this.mouseY = (e.clientY / this.height - 0.5) * 2;
-    });
+    }, { passive: true });
   }
 
   animate() {
     this.ctx.clearRect(0, 0, this.width, this.height);
     this.particles.forEach(p => {
-      p.x += p.vx + this.mouseX * 0.1;
-      p.y += p.vy + this.mouseY * 0.05;
+      p.x += p.vx + this.mouseX * 0.08;
+      p.y += p.vy + this.mouseY * 0.04;
       p.pulse += p.pulseSpeed;
 
       if (p.x < 0) p.x = this.width;
@@ -207,7 +218,7 @@ class AuroraCanvas {
       const alpha = p.alpha * (0.7 + 0.3 * Math.sin(p.pulse));
       this.ctx.beginPath();
       this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      this.ctx.fillStyle = `hsla(${p.hue}, 70%, 70%, ${alpha})`;
+      this.ctx.fillStyle = `hsla(${p.hue}, 82%, 78%, ${alpha})`;
       this.ctx.fill();
     });
 
@@ -218,12 +229,12 @@ class AuroraCanvas {
         const dx = a.x - b.x;
         const dy = a.y - b.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 150) {
-          const alpha = (1 - dist / 150) * 0.08;
+        if (dist < 138) {
+          const alpha = (1 - dist / 138) * 0.075;
           this.ctx.beginPath();
           this.ctx.moveTo(a.x, a.y);
           this.ctx.lineTo(b.x, b.y);
-          this.ctx.strokeStyle = `hsla(${(a.hue + b.hue) / 2}, 60%, 70%, ${alpha})`;
+          this.ctx.strokeStyle = `hsla(${(a.hue + b.hue) / 2}, 70%, 74%, ${alpha})`;
           this.ctx.lineWidth = 0.5;
           this.ctx.stroke();
         }
@@ -239,21 +250,20 @@ class AuroraCanvas {
 function createHeroStars() {
   const container = document.getElementById('heroStars');
   if (!container) return;
-  const count = 60;
+  const count = window.innerWidth < 640 ? 38 : 72;
   for (let i = 0; i < count; i++) {
     const star = document.createElement('div');
     const size = Math.random() * 3 + 1;
+    const isCross = i % 11 === 0;
     Object.assign(star.style, {
-      position: 'absolute',
       width: size + 'px',
       height: size + 'px',
       left: Math.random() * 100 + '%',
       top: Math.random() * 100 + '%',
-      background: `hsla(${260 + Math.random() * 60}, 60%, 80%, ${0.3 + Math.random() * 0.4})`,
-      borderRadius: '50%',
-      boxShadow: `0 0 ${size * 2}px hsla(${260 + Math.random() * 60}, 60%, 80%, 0.2)`,
+      color: `hsl(${[155, 184, 326, 48][Math.floor(Math.random() * 4)]} 95% 84%)`,
       animation: `twinkle ${2 + Math.random() * 3}s ease-in-out ${Math.random() * 3}s infinite`,
     });
+    star.className = `hero-star${isCross ? ' cross' : ''}`;
     container.appendChild(star);
   }
 }
@@ -416,12 +426,24 @@ function renderStars(count, max = 5) {
   ).join('');
 }
 
+function escapeHTML(value) {
+  return String(value).replace(/[&<>'"]/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;',
+  })[character]);
+}
+
 function showAIResult(result) {
   const container = document.getElementById('aiResult');
+  if (!container) return;
+  const safeName = escapeHTML(result.name);
   container.innerHTML = `
     <div class="ai-result-content">
       <div class="ai-result-item full" style="border:none; background:transparent; padding:0 0 8px 0;">
-        <div class="ai-result-value" style="font-size:18px;">「${result.name}」</div>
+        <div class="ai-result-value" style="font-size:18px;">「${safeName}」</div>
       </div>
       <div class="ai-result-item">
         <div class="ai-result-label">产品定位</div>
@@ -482,7 +504,7 @@ function renderLabProducts() {
   if (!grid) return;
 
   grid.innerHTML = LAB_PRODUCTS.map((p, i) => `
-    <a href="${p.link}" target="${p.link.startsWith('http') ? '_blank' : '_self'}" class="lab-product-card card-reveal" style="transition-delay:${i * 0.06}s">
+    <a href="${p.link}" target="${p.link.startsWith('http') ? '_blank' : '_self'}"${p.link.startsWith('http') ? ' rel="noopener"' : ''} class="lab-product-card card-reveal" style="transition-delay:${i * 0.06}s">
       <span class="lab-product-tag ${p.tagClass}">${p.tag}</span>
       <h4 class="lab-product-title">${p.title}</h4>
       <p class="lab-product-desc">${p.desc}</p>
@@ -576,8 +598,12 @@ function initFilters() {
   const filterBtns = document.querySelectorAll('.filter-btn');
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('active'));
+      filterBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
       btn.classList.add('active');
+      btn.setAttribute('aria-pressed', 'true');
       renderIdeas(btn.dataset.filter);
     });
   });
@@ -587,8 +613,12 @@ function initLeaderboardTabs() {
   const tabs = document.querySelectorAll('.lb-tab');
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
+      tabs.forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-pressed', 'false');
+      });
       tab.classList.add('active');
+      tab.setAttribute('aria-pressed', 'true');
       renderLeaderboard(tab.dataset.lb);
     });
   });
@@ -599,6 +629,7 @@ function initLeaderboardTabs() {
 function initAIInput() {
   const input = document.getElementById('ideaInput');
   const btn = document.getElementById('analyzeBtn');
+  if (!input || !btn) return;
 
   const analyze = () => {
     const text = input.value.trim();
@@ -622,6 +653,7 @@ function initAIInput() {
 
 function initHeaderScroll() {
   const header = document.getElementById('header');
+  if (!header) return;
   let ticking = false;
 
   window.addEventListener('scroll', () => {
@@ -642,14 +674,88 @@ function initMobileMenu() {
   const nav = document.getElementById('nav');
   if (!menuBtn || !nav) return;
 
+  const setMenuState = (isOpen) => {
+    nav.classList.toggle('nav-open', isOpen);
+    menuBtn.setAttribute('aria-expanded', String(isOpen));
+    menuBtn.setAttribute('aria-label', isOpen ? '关闭导航菜单' : '打开导航菜单');
+  };
+
   menuBtn.addEventListener('click', () => {
-    nav.classList.toggle('nav-open');
+    setMenuState(!nav.classList.contains('nav-open'));
   });
 
   nav.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', () => {
-      nav.classList.remove('nav-open');
+      setMenuState(false);
     });
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && nav.classList.contains('nav-open')) {
+      setMenuState(false);
+      menuBtn.focus();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) setMenuState(false);
+  }, { passive: true });
+}
+
+// ---- DREAM SCENE INTERACTION ----
+
+function initWonderScene() {
+  const scene = document.getElementById('wonderScene');
+  const hero = document.getElementById('hero');
+  const sparkBtn = document.getElementById('sparkBtn');
+  const planet = document.getElementById('dreamPlanet');
+  if (!scene || !hero || !sparkBtn || !planet) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduceMotion && window.matchMedia('(pointer: fine)').matches) {
+    hero.addEventListener('pointermove', (event) => {
+      const rect = hero.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - 0.5;
+      const y = (event.clientY - rect.top) / rect.height - 0.5;
+      scene.style.setProperty('--scene-x', `${x * 18}px`);
+      scene.style.setProperty('--scene-y', `${y * 12}px`);
+    }, { passive: true });
+
+    hero.addEventListener('pointerleave', () => {
+      scene.style.setProperty('--scene-x', '0px');
+      scene.style.setProperty('--scene-y', '0px');
+    }, { passive: true });
+  }
+
+  sparkBtn.addEventListener('click', () => {
+    const colors = ['#72f2c5', '#65d9ff', '#ff89c2', '#ffe36e'];
+    const planetRect = planet.getBoundingClientRect();
+    const originX = planetRect.left + planetRect.width * 0.5;
+    const originY = planetRect.top + planetRect.height * 0.5;
+    const amount = window.innerWidth < 640 ? 7 : 12;
+
+    hero.classList.remove('sparked');
+    requestAnimationFrame(() => {
+      hero.classList.add('sparked');
+      window.setTimeout(() => hero.classList.remove('sparked'), 900);
+    });
+
+    for (let i = 0; i < amount; i += 1) {
+      const spark = document.createElement('span');
+      const angle = (Math.PI * 2 * i) / amount + Math.random() * 0.3;
+      const distance = 70 + Math.random() * 130;
+      spark.className = 'spark-burst';
+      spark.style.setProperty('--spark-x', `${originX}px`);
+      spark.style.setProperty('--spark-y', `${originY}px`);
+      spark.style.setProperty('--spark-dx', `${Math.cos(angle) * distance}px`);
+      spark.style.setProperty('--spark-dy', `${Math.sin(angle) * distance}px`);
+      spark.style.setProperty('--spark-color', colors[i % colors.length]);
+      document.body.appendChild(spark);
+      spark.addEventListener('animationend', () => spark.remove(), { once: true });
+    }
+
+    sparkBtn.blur();
   });
 }
 
@@ -670,6 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAIInput();
   initHeaderScroll();
   initMobileMenu();
+  initWonderScene();
 
   console.log('✦ Morain Lab — Idea Incubator loaded');
 });
