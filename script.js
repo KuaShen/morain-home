@@ -341,9 +341,9 @@ function renderIdeas(filter = 'all') {
         ${progressHtml}
         <div class="idea-card-footer">
           <div class="idea-card-actions">
-            <span class="idea-card-action">
+            <button class="idea-card-action idea-like-btn" type="button" data-idea-title="${idea.title}" aria-label="点赞 ${idea.title}">
               ${heartIcon} ${idea.likes}
-            </span>
+            </button>
             <span class="idea-card-action">
               ${starIcon} ${idea.favs}
             </span>
@@ -351,7 +351,7 @@ function renderIdeas(filter = 'all') {
               ${msgIcon} ${idea.comments}
             </span>
           </div>
-          <button class="idea-card-claim" onclick="alert('🚀 你已认领「${idea.title}」的开发！')">
+          <button class="idea-card-claim" type="button" data-idea-title="${idea.title}">
             🚀 我要开发
           </button>
         </div>
@@ -605,6 +605,7 @@ function initFilters() {
       btn.classList.add('active');
       btn.setAttribute('aria-pressed', 'true');
       renderIdeas(btn.dataset.filter);
+      window.Morain?.track('idea_filter_changed', { filter: btn.dataset.filter });
     });
   });
 }
@@ -639,6 +640,7 @@ function initAIInput() {
       return;
     }
     input.style.borderColor = '';
+    window.Morain?.track('ai_analysis_requested', { length: text.length });
     const result = simulateAIAnalysis(text);
     showAIResult(result);
   };
@@ -729,6 +731,7 @@ function initWonderScene() {
   }
 
   sparkBtn.addEventListener('click', () => {
+    window.Morain?.track('hero_cta_clicked', { cta: 'spark_idea' });
     const colors = ['#72f2c5', '#65d9ff', '#ff89c2', '#ffe36e'];
     const planetRect = planet.getBoundingClientRect();
     const originX = planetRect.left + planetRect.width * 0.5;
@@ -759,6 +762,32 @@ function initWonderScene() {
   });
 }
 
+function initIdeaActions() {
+  const ideasGrid = document.getElementById('ideasGrid');
+  if (!ideasGrid) return;
+
+  ideasGrid.addEventListener('click', (event) => {
+    const likeButton = event.target.closest('.idea-like-btn');
+    if (likeButton) {
+      likeButton.classList.toggle('active');
+      likeButton.setAttribute('aria-pressed', String(likeButton.classList.contains('active')));
+      window.Morain?.track('idea_liked', { idea: likeButton.dataset.ideaTitle });
+      return;
+    }
+
+    const claimButton = event.target.closest('.idea-card-claim');
+    if (!claimButton) return;
+    if (!window.Morain?.account) {
+      window.Morain?.openAuth('register');
+      return;
+    }
+    window.Morain?.track('idea_claimed', {
+      idea: claimButton.dataset.ideaTitle,
+    });
+    window.Morain?.notify(`已记录「${claimButton.dataset.ideaTitle}」的开发意向`);
+  });
+}
+
 // ---- INIT ----
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -777,6 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeaderScroll();
   initMobileMenu();
   initWonderScene();
+  initIdeaActions();
 
   console.log('✦ Morain Lab — Idea Incubator loaded');
 });

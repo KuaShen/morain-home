@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>运营后台 - Morain Lab</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="admin.css?v=20260721-identity" />
+</head>
+<body>
+  <div class="admin-shell">
+    <section class="admin-gate" id="adminGate">
+      <div class="admin-gate-mark">M</div>
+      <span class="admin-kicker">MORAIN OPERATIONS</span>
+      <h1>运营工作台</h1>
+      <p>仅限授权运营人员。</p>
+      <form class="admin-login-form" id="adminLoginForm">
+        <label>
+          <span>管理员邮箱</span>
+          <input name="email" type="email" autocomplete="username" required placeholder="operator@example.com" />
+        </label>
+        <label>
+          <span>密码</span>
+          <input name="password" type="password" autocomplete="current-password" required placeholder="输入密码" />
+        </label>
+        <p class="admin-form-message" id="adminLoginMessage" aria-live="polite"></p>
+        <button class="admin-primary-btn" type="submit">进入工作台</button>
+      </form>
+      <a class="admin-back-link" href="/">返回 Morain Lab</a>
+    </section>
+
+    <div class="admin-app" id="adminApp" hidden>
+      <header class="admin-topbar">
+        <div class="admin-topbar-brand">
+          <span class="admin-mini-mark">M</span>
+          <div>
+            <strong>Morain Operations</strong>
+            <span>身份、增长与产品运营</span>
+          </div>
+        </div>
+        <div class="admin-topbar-actions">
+          <span class="api-health" id="apiHealth"><i></i> API 检查中</span>
+          <span class="admin-current-user" id="adminCurrentUser"></span>
+          <button class="admin-ghost-btn" type="button" id="adminLogoutBtn">退出</button>
+        </div>
+      </header>
+
+      <div class="admin-layout">
+        <aside class="admin-sidebar">
+          <nav class="admin-nav" aria-label="运营导航">
+            <button class="active" type="button" data-admin-view="overview">
+              <span class="nav-icon">◈</span> 总览
+            </button>
+            <button type="button" data-admin-view="users">
+              <span class="nav-icon">◎</span> 用户
+            </button>
+            <button type="button" data-admin-view="analytics">
+              <span class="nav-icon">⌁</span> 行为分析
+            </button>
+            <button type="button" data-admin-view="logs">
+              <span class="nav-icon">≡</span> 审计与日志
+            </button>
+          </nav>
+          <div class="admin-sidebar-note">
+              <span class="status-dot"></span>
+              <div>
+              <strong>Production</strong>
+              <span>安全审计在线</span>
+            </div>
+          </div>
+        </aside>
+
+        <main class="admin-main">
+          <section class="admin-view active" data-admin-panel="overview">
+            <div class="admin-view-heading">
+              <div>
+                <span class="admin-kicker">CONTROL ROOM</span>
+                <h1>今天，产品在发生什么</h1>
+                <p>截至当前的运营快照。</p>
+              </div>
+              <button class="admin-outline-btn" type="button" data-refresh="overview">刷新数据</button>
+            </div>
+            <div class="metric-grid" id="overviewMetrics"></div>
+            <div class="admin-grid-two">
+              <section class="admin-panel">
+                <div class="panel-heading">
+                  <div><span class="panel-kicker">ACTIVITY</span><h2>近 14 天活跃趋势</h2></div>
+                  <span class="panel-caption">事件 / 访客</span>
+                </div>
+                <div class="trend-chart" id="overviewTrend"></div>
+              </section>
+              <section class="admin-panel">
+                <div class="panel-heading">
+                  <div><span class="panel-kicker">SUBSCRIPTIONS</span><h2>订阅结构</h2></div>
+                </div>
+                <div class="mix-list" id="subscriptionMix"></div>
+              </section>
+            </div>
+            <section class="admin-panel">
+              <div class="panel-heading">
+                <div><span class="panel-kicker">SIGNALS</span><h2>近 7 天高频事件</h2></div>
+              </div>
+              <div class="signal-list" id="topEvents"></div>
+            </section>
+          </section>
+
+          <section class="admin-view" data-admin-panel="users" hidden>
+            <div class="admin-view-heading">
+              <div>
+                <span class="admin-kicker">IDENTITY GRAPH</span>
+                <h1>用户与订阅</h1>
+                <p>账户与权益状态。</p>
+              </div>
+              <button class="admin-outline-btn" type="button" data-refresh="users">刷新列表</button>
+            </div>
+            <section class="admin-panel">
+              <form class="filter-bar" id="userFilterForm">
+                <label class="filter-search">
+                  <span>搜索昵称</span>
+                  <input name="search" type="search" placeholder="输入昵称" />
+                </label>
+                <label>
+                  <span>账户状态</span>
+                  <select name="status">
+                    <option value="">全部状态</option>
+                    <option value="active">正常</option>
+                    <option value="suspended">已冻结</option>
+                  </select>
+                </label>
+                <label>
+                  <span>订阅套餐</span>
+                  <select name="plan" id="userPlanFilter">
+                    <option value="">全部套餐</option>
+                  </select>
+                </label>
+                <button class="admin-primary-btn filter-submit" type="submit">筛选</button>
+              </form>
+              <div class="table-wrap">
+                <table class="admin-table">
+                  <thead>
+                    <tr><th>用户</th><th>角色</th><th>状态</th><th>订阅</th><th>近 30 天事件</th><th>创建时间</th><th></th></tr>
+                  </thead>
+                  <tbody id="usersTableBody"></tbody>
+                </table>
+              </div>
+              <div class="table-footer">
+                <span id="usersTotal"></span>
+                <div class="pagination" id="usersPagination"></div>
+              </div>
+            </section>
+          </section>
+
+          <section class="admin-view" data-admin-panel="analytics" hidden>
+            <div class="admin-view-heading">
+              <div>
+                <span class="admin-kicker">BEHAVIOR SIGNALS</span>
+                <h1>行为分析</h1>
+                <p>关键行为信号与转化。</p>
+              </div>
+              <label class="days-control">时间范围
+                <select id="analyticsDays">
+                  <option value="7">近 7 天</option>
+                  <option value="30" selected>近 30 天</option>
+                  <option value="90">近 90 天</option>
+                </select>
+              </label>
+            </div>
+            <section class="admin-panel">
+              <div class="panel-heading">
+                <div><span class="panel-kicker">FUNNEL</span><h2>关键转化事件</h2></div>
+              </div>
+              <div class="funnel-grid" id="analyticsFunnel"></div>
+            </section>
+            <div class="admin-grid-two">
+              <section class="admin-panel">
+                <div class="panel-heading"><div><span class="panel-kicker">EVENT TIMELINE</span><h2>事件趋势</h2></div></div>
+                <div class="timeline-table" id="analyticsTimeline"></div>
+              </section>
+              <section class="admin-panel">
+                <div class="panel-heading"><div><span class="panel-kicker">PAGES</span><h2>页面访问</h2></div></div>
+                <div class="page-list" id="analyticsPages"></div>
+              </section>
+            </div>
+          </section>
+
+          <section class="admin-view" data-admin-panel="logs" hidden>
+            <div class="admin-view-heading">
+              <div>
+                <span class="admin-kicker">TRUST & SAFETY</span>
+                <h1>审计与日志</h1>
+                <p>高权限动作与系统异常。</p>
+              </div>
+              <button class="admin-outline-btn" type="button" data-refresh="logs">刷新日志</button>
+            </div>
+            <div class="log-tabs" role="tablist">
+              <button class="active" type="button" data-log-view="audit">操作审计</button>
+              <button type="button" data-log-view="application">应用错误</button>
+            </div>
+            <section class="admin-panel">
+              <div class="table-wrap">
+                <table class="admin-table log-table">
+                  <thead id="logsTableHead"></thead>
+                  <tbody id="logsTableBody"></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-drawer-backdrop" id="userDrawerBackdrop" hidden></div>
+  <aside class="user-drawer" id="userDrawer" aria-label="用户详情" hidden>
+    <div class="drawer-heading">
+      <div><span class="admin-kicker">USER PROFILE</span><h2>用户详情</h2></div>
+      <button class="admin-icon-btn" type="button" id="closeUserDrawer" aria-label="关闭">×</button>
+    </div>
+    <div id="userDrawerContent"></div>
+  </aside>
+  <div class="admin-toast-region" id="adminToastRegion" aria-live="polite"></div>
+  <script src="admin.js?v=20260721-identity"></script>
+</body>
+</html>

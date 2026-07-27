@@ -14,7 +14,7 @@
   <meta property="og:locale" content="zh_CN" />
   <meta name="robots" content="index, follow" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="stylesheet" href="style.css?v=20260718-aurora" />
+  <link rel="stylesheet" href="style.css?v=20260722-beian" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Noto+Sans+SC:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
@@ -57,6 +57,33 @@
         <a href="#sites" class="nav-link">产品矩阵</a>
         <a href="#lab" class="nav-link">实验室</a>
       </nav>
+      <div class="header-account">
+        <button class="auth-entry-btn" id="authOpenBtn" type="button" aria-label="登录或注册">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>登录</span>
+        </button>
+        <div class="user-menu-wrap" id="userMenuWrap" hidden>
+          <button class="user-chip" id="userMenuBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+            <span class="user-avatar" id="userAvatar">M</span>
+            <span class="user-name" id="userName">造梦者</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="user-menu" id="userMenu" role="menu" hidden>
+            <button type="button" role="menuitem" data-account-action="profile">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 18a4 4 0 0 1 8 0"/><circle cx="12" cy="9" r="2.5"/></svg>
+              账户中心
+            </button>
+            <a href="admin.html" role="menuitem" id="adminMenuLink" hidden>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              运营后台
+            </a>
+            <button type="button" role="menuitem" data-account-action="logout">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg>
+              退出登录
+            </button>
+          </div>
+        </div>
+      </div>
       <button class="menu-btn" id="menuBtn" type="button" aria-label="打开导航菜单" aria-controls="nav" aria-expanded="false">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
@@ -126,7 +153,7 @@
             从一句异想天开，到一颗真正运转的小星球。
           </p>
           <div class="hero-actions">
-            <a href="#ideas" class="btn btn-primary">
+            <a href="#ideas" class="btn btn-primary" data-track-event="hero_cta_clicked" data-track-cta="browse_ideas">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12h6"/><path d="M12 9v6"/><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/></svg>
               漫游脑洞星河
             </a>
@@ -466,15 +493,193 @@
           <a href="privacy.html">隐私政策</a>
           <a href="terms.html">服务条款</a>
           <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">浙ICP备2026054006号-1</a>
+          <a href="https://beian.mps.gov.cn/#/query/webSearch?code=33018302002093" target="_blank" rel="noopener noreferrer">浙公网安备33018302002093号</a>
         </div>
       </div>
       <div class="footer-bottom">
         <span>&copy; 2026 Morain Lab. 从脑洞到产品，我们说到做到。</span>
-        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" class="footer-icp">浙ICP备2026054006号-1</a>
+        <div class="footer-records">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" class="footer-record">浙ICP备2026054006号-1</a>
+          <a href="https://beian.mps.gov.cn/#/query/webSearch?code=33018302002093" target="_blank" rel="noopener noreferrer" class="footer-record">浙公网安备33018302002093号</a>
+        </div>
       </div>
     </div>
   </footer>
 
-  <script src="script.js?v=20260718-aurora"></script>
+  <div class="auth-modal" id="authModal" hidden>
+    <div class="auth-backdrop" data-auth-close></div>
+    <section class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <button class="icon-btn auth-close" type="button" aria-label="关闭" data-auth-close>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="auth-brand">
+        <span class="auth-brand-mark">M</span>
+        <div>
+          <strong>Morain Lab</strong>
+          <span>你的灵感身份舱</span>
+        </div>
+      </div>
+
+      <div class="auth-view" data-auth-view="login">
+        <div class="auth-heading">
+          <span class="auth-eyebrow">WELCOME BACK</span>
+          <h2 id="authTitle">继续你的造梦旅程</h2>
+          <p>欢迎回到你的灵感轨道。</p>
+        </div>
+        <div class="auth-tabs" role="tablist" aria-label="账户入口">
+          <button class="active" type="button" role="tab" aria-selected="true" data-auth-switch="login">登录</button>
+          <button type="button" role="tab" aria-selected="false" data-auth-switch="register">注册</button>
+        </div>
+        <form class="auth-form" id="loginForm">
+          <label>
+            <span>邮箱</span>
+            <input name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com" />
+          </label>
+          <label>
+            <span>密码</span>
+            <input name="password" type="password" autocomplete="current-password" minlength="10" maxlength="128" required placeholder="输入密码" />
+          </label>
+          <div class="auth-form-row">
+            <span></span>
+            <button class="text-btn" type="button" data-auth-switch="forgot">忘记密码？</button>
+          </div>
+          <p class="form-message" data-form-message aria-live="polite"></p>
+          <button class="auth-submit" type="submit">
+            <span>进入灵感宇宙</span>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+          </button>
+        </form>
+      </div>
+
+      <div class="auth-view" data-auth-view="register" hidden>
+        <div class="auth-heading">
+          <span class="auth-eyebrow">CREATE YOUR ORBIT</span>
+          <h2>领取一颗灵感星球</h2>
+          <p>从这里开始记录每一次闪光。</p>
+        </div>
+        <div class="auth-tabs" role="tablist" aria-label="账户入口">
+          <button type="button" role="tab" aria-selected="false" data-auth-switch="login">登录</button>
+          <button class="active" type="button" role="tab" aria-selected="true" data-auth-switch="register">注册</button>
+        </div>
+        <form class="auth-form" id="registerForm">
+          <label>
+            <span>昵称</span>
+            <input name="displayName" type="text" autocomplete="nickname" maxlength="50" required placeholder="怎么称呼你？" />
+          </label>
+          <label>
+            <span>邮箱</span>
+            <input name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com" />
+          </label>
+          <label>
+            <span>密码</span>
+            <input name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" required placeholder="至少 10 位，包含字母和数字" />
+          </label>
+          <label class="auth-check">
+            <input name="termsAccepted" type="checkbox" required />
+            <span>我已阅读并同意 <a href="terms.html" target="_blank">服务条款</a> 与 <a href="privacy.html" target="_blank">隐私政策</a></span>
+          </label>
+          <label class="auth-check auth-check-muted">
+            <input name="marketingConsent" type="checkbox" />
+            <span>愿意偶尔收到产品更新和内测邀请</span>
+          </label>
+          <p class="form-message" data-form-message aria-live="polite"></p>
+          <button class="auth-submit" type="submit">
+            <span>创建账户</span>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </form>
+      </div>
+
+      <div class="auth-view" data-auth-view="forgot" hidden>
+        <div class="auth-heading">
+          <span class="auth-eyebrow">RECOVER ORBIT</span>
+          <h2>找回你的旅程</h2>
+          <p>输入注册邮箱，我们会发送一封安全重置邮件。</p>
+        </div>
+        <form class="auth-form" id="forgotForm">
+          <label>
+            <span>邮箱</span>
+            <input name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com" />
+          </label>
+          <p class="form-message" data-form-message aria-live="polite"></p>
+          <button class="auth-submit" type="submit">发送重置邮件</button>
+          <button class="text-btn auth-back-link" type="button" data-auth-switch="login">返回登录</button>
+        </form>
+      </div>
+
+      <div class="auth-view" data-auth-view="reset" hidden>
+        <div class="auth-heading">
+          <span class="auth-eyebrow">NEW ACCESS KEY</span>
+          <h2>设置新密码</h2>
+          <p>更新后，其他设备上的登录会自动失效。</p>
+        </div>
+        <form class="auth-form" id="resetForm">
+          <label>
+            <span>新密码</span>
+            <input name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" required placeholder="至少 10 位，包含字母和数字" />
+          </label>
+          <p class="form-message" data-form-message aria-live="polite"></p>
+          <button class="auth-submit" type="submit">更新密码</button>
+        </form>
+      </div>
+
+      <div class="auth-view account-view" data-auth-view="account" hidden>
+        <div class="account-heading">
+          <div class="account-avatar" id="accountAvatar">M</div>
+          <div>
+            <span class="auth-eyebrow">YOUR ORBIT</span>
+            <h2 id="accountName">造梦者</h2>
+            <p id="accountEmail">正在读取账户...</p>
+          </div>
+        </div>
+        <div class="subscription-band">
+          <div>
+            <span>当前订阅</span>
+            <strong id="accountPlan">星尘访客</strong>
+          </div>
+          <span class="subscription-status" id="accountPlanStatus">使用中</span>
+        </div>
+        <form class="auth-form account-form" id="accountForm">
+          <div class="auth-field-grid">
+            <label>
+              <span>昵称</span>
+              <input name="displayName" type="text" maxlength="50" required />
+            </label>
+            <label>
+              <span>手机号（可选）</span>
+              <input name="phone" type="tel" autocomplete="tel" maxlength="24" placeholder="+86" />
+            </label>
+            <label>
+              <span>语言</span>
+              <select name="locale">
+                <option value="zh-CN">简体中文</option>
+                <option value="en-US">English</option>
+              </select>
+            </label>
+            <label>
+              <span>时区</span>
+              <select name="timezone">
+                <option value="Asia/Shanghai">中国标准时间</option>
+                <option value="Asia/Hong_Kong">香港时间</option>
+                <option value="America/Los_Angeles">太平洋时间</option>
+                <option value="Europe/London">伦敦时间</option>
+              </select>
+            </label>
+          </div>
+          <label class="auth-check auth-check-muted">
+            <input name="marketingConsent" type="checkbox" />
+            <span>接收产品更新和内测邀请</span>
+          </label>
+          <p class="form-message" data-form-message aria-live="polite"></p>
+          <button class="auth-submit" type="submit">保存账户信息</button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="platform.js?v=20260721-identity"></script>
+  <script src="script.js?v=20260721-identity"></script>
 </body>
 </html>
